@@ -1,0 +1,239 @@
+# Windows specific
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.tmp
+*.temp
+
+.docker/
+
+.env
+
+# Dependencies - both frontend and backend
+frontend/node_modules/
+backend/venv/
+backend/env/
+backend/__pycache__/
+frontend/.pnpm-store/
+frontend/.yarn/
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Production builds
+frontend/.next/
+frontend/build/
+frontend/dist/
+frontend/out/
+backend/dist/
+backend/build/
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+frontend/.env*
+backend/.env*
+
+# Frontend specific
+frontend/.eslintcache
+frontend/.next/
+frontend/.cache/
+frontend/.parcel-cache/
+frontend/.swc/
+
+# Backend specific - Python
+backend/__pycache__/
+backend/*.py[cod]
+backend/*$py.class
+backend/*.so
+backend/.Python
+backend/env/
+backend/venv/
+backend/ENV/
+backend/env.bak/
+backend/venv.bak/
+backend/.pytest_cache/
+backend/.coverage
+backend/htmlcov/
+backend/.tox/
+backend/nosetests.xml
+backend/coverage.xml
+backend/*.cover
+backend/.hypothesis/
+backend/.mypy_cache/
+backend/.dmypy.json
+backend/dmypy.json
+backend/.pyre/
+backend/celerybeat-schedule
+backend/*.db
+backend/*.sqlite
+backend/*.sqlite3
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.sublime-project
+*.sublime-workspace
+
+# Logs
+logs/
+*.log
+frontend/logs/
+backend/logs/
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+*.lcov
+frontend/coverage/
+backend/coverage/
+
+# NYC test coverage
+.nyc_output/
+
+# Optional npm cache directory
+.npm
+frontend/.npm
+backend/.npm
+
+# Optional eslint cache
+.eslintcache
+frontend/.eslintcache
+backend/.eslintcache
+
+# Dependency directories
+jspm_packages/
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# Temporary folders
+tmp/
+temp/
+frontend/tmp/
+backend/tmp/
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+postgresql_data/
+redis_data/
+backend/database/
+backend/db/
+
+# Docker
+.dockerignore
+Dockerfile.prod
+docker-compose.override.yml
+
+# AI and ML specific
+backend/models/
+backend/checkpoints/
+backend/wandb/
+backend/mlruns/
+*.pkl
+*.joblib
+*.h5
+*.hdf5
+
+# Vector databases
+.chroma/
+.faiss/
+.pinecone/
+backend/.chroma/
+backend/.faiss/
+
+# Monitoring
+grafana_data/
+prometheus_data/
+monitoring/grafana_data/
+monitoring/prometheus_data/
+
+# Secrets and certificates
+*.pem
+*.key
+*.crt
+*.p12
+secrets/
+certs/
+backend/secrets/
+frontend/secrets/
+
+# Backup files
+*.backup
+*.bak
+*.orig
+
+# Testing
+test-results/
+playwright-report/
+playwright/.cache/
+frontend/test-results/
+backend/test-results/
+frontend/playwright-report/
+backend/pytest_cache/
+
+# Local development
+.local/
+local/
+frontend/.local/
+backend/.local/
+
+# Package managers lock files (you may want to keep these)
+# Remove the # if you want to ignore lock files
+# frontend/package-lock.json
+# frontend/yarn.lock
+# frontend/pnpm-lock.yaml
+
+# Neo4j
+backend/neo4j_data/
+neo4j_data/
+
+# Redis
+backend/redis_data/
+redis_data/
+
+# Jupyter Notebook
+backend/.ipynb_checkpoints
+*.ipynb_checkpoints
+
+# FastAPI specific
+backend/.pytest_cache/
+backend/alembic/versions/
+backend/static/
+backend/media/
+
+# Next.js specific
+frontend/.next/
+frontend/out/
+frontend/.swc/
+
+# TypeScript
+frontend/*.tsbuildinfo
+backend/*.tsbuildinfo
+
+# Sentry
+.sentryclirc
+frontend/.sentryclirc
+backend/.sentryclirc

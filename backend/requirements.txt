@@ -1,0 +1,41 @@
+# requirements.txt
+# FastAPI + LangChain + OpenAI Compatible Requirements (Late 2024/Early 2025)
+# Python Version: 3.11 recommended (better library compatibility than 3.12)
+
+## Core FastAPI Stack
+fastapi==0.116.1
+uvicorn[standard]==0.32.1
+pydantic==2.11.9
+
+## AI/ML Integration  
+langchain-openai==0.3.33    # Use this instead of langchain + openai separately
+openai==1.109.1              # Compatible with langchain-openai 0.3.33
+
+## Database & ORM
+sqlalchemy==2.0.36
+alembic==1.16.5              # Requires Python 3.9+, SQLAlchemy 1.4+
+psycopg[binary]==3.2.10       # Recommended for new projects (psycopg3)
+
+## Graph Database (Neo4j)
+neo4j==5.28.2                # Latest LTS version, supports Python 3.7+
+
+## Monitoring & Logging  
+prometheus-client==0.23.1    # Requires Python 3.9+
+structlog==24.4.0
+
+## Security & Authentication
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+python-multipart==0.0.18     # Required for form handling
+
+## HTTP Client
+httpx==0.28.0                # Async HTTP client, used by OpenAI SDK
+
+## Development & Testing
+pytest==8.3.4
+pytest-asyncio==0.24.0
+
+## Additional FastAPI Dependencies
+jinja2==3.1.5                # Template engine
+python-dotenv==1.0.1         # Environment variables
+typer==0.16.0                 # CLI tool (used by FastAPI CLI)

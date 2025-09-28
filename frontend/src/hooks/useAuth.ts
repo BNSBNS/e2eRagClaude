@@ -1,0 +1,81 @@
+// src/hooks/useAuth.ts - COMPATIBILITY VERSION
+'use client'
+
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { apiClient } from '@/lib/api';
+
+interface User {
+  id: string;
+  email: string;
+  role: string;
+}
+
+export const useAuth = () => {
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
+
+  const login = async (email: string, password: string) => {
+    try {
+      const response = await apiClient.post('/auth/login', { email, password });
+      const { access_token } = response.data;
+      
+      localStorage.setItem('access_token', access_token);
+      const userResponse = await apiClient.get('/auth/me');
+      setUser(userResponse.data);
+      
+      router.push('/dashboard');
+    } catch (error) {
+      throw new Error('Login failed');
+    }
+  };
+
+  const logout = () => {
+    localStorage.removeItem('access_token');
+    setUser(null);
+    router.push('/login');
+  };
+
+  useEffect(() => {
+    const token = localStorage.getItem('access_token');
+    if (token) {
+      apiClient.get('/auth/me').then(response => {
+        setUser(response.data);
+        setLoading(false);
+      }).catch(() => {
+        logout();
+      });
+    } else {
+      setLoading(false);
+    }
+  }, []);
+
+  return { 
+    user, 
+    login, 
+    logout, 
+    loading,
+    isLoading: loading,  
+    isAuthenticated: !!user,
+  };
+};
+
+export const useRequireAuth = () => {
+  const auth = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!auth.isLoading && !auth.isAuthenticated) {
+      router.push('/login');
+    }
+  }, [auth.isLoading, auth.isAuthenticated, router]);
+
+  return auth;
+};
+
+export const useOptionalAuth = () => {
+  return useAuth();
+};
+
+export default useAuth;
