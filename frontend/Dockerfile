@@ -1,48 +1,37 @@
 FROM node:20-alpine AS base
 
-# Install dependencies only when needed
+# Dependencies
 FROM base AS deps
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
-# Copy package files - this handles all possible lockfiles
-COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* ./
+COPY package.json package-lock.json* ./
+RUN npm ci  # ✓ Explicit npm ci
 
-# Install based on available lockfile
-RUN \
-  if [ -f yarn.lock ]; then yarn --frozen-lockfile; \
-  elif [ -f package-lock.json ]; then npm ci; \
-  elif [ -f pnpm-lock.yaml ]; then corepack enable pnpm && pnpm i --frozen-lockfile; \
-  else echo "Lockfile not found." && exit 1; \
-  fi
-
-# Production build stage
-FROM base AS production
+# Build
+FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-ENV NEXT_TELEMETRY_DISABLED 1
-RUN rm -rf .next
-RUN yarn build
+ENV NEXT_TELEMETRY_DISABLED=1
+RUN npm run build  # ✓ Changed to npm run build
 
-# Production runtime
-FROM base AS runner
+# Runtime
+FROM base AS production
 WORKDIR /app
-ENV NODE_ENV production
-ENV NEXT_TELEMETRY_DISABLED 1
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-# Copy everything needed
-COPY --from=production --chown=nextjs:nodejs /app/.next ./.next
-COPY --from=production --chown=nextjs:nodejs /app/node_modules ./node_modules
-COPY --from=production --chown=nextjs:nodejs /app/package.json ./package.json
-COPY --from=production --chown=nextjs:nodejs /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 
 USER nextjs
 EXPOSE 3000
-ENV PORT 3000
+ENV PORT=3000
+ENV HOSTNAME=0.0.0.0
 
-# Use Next.js built-in server
-CMD ["npm", "start"]
+CMD ["node", "server.js"]
