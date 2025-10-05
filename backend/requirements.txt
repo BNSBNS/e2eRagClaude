@@ -19,6 +19,8 @@ neo4j==5.16.0
 python-jose[cryptography]==3.3.0
 passlib[bcrypt]
 bcrypt
+argon2-cffi
+passlib[argon2]
 python-multipart==0.0.6
 
 # Pydantic for data validation

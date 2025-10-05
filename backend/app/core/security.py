@@ -9,9 +9,10 @@ logger = structlog.get_logger()
 
 # Use bcrypt with proper settings
 pwd_context = CryptContext(
-    schemes=["bcrypt"],
+    # schemes=["bcrypt_sha256"],
+    schemes=["argon2"],
     deprecated="auto",
-    bcrypt__rounds=12  # Explicit rounds
+    # bcrypt__rounds=12  # Explicit rounds
 )
 
 

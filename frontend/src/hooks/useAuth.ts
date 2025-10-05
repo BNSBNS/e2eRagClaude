@@ -16,10 +16,10 @@ export const useAuth = () => {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  const login = async (email: string, password: string) => {
+  const login = async (username: string, password: string) => {
     try {
       const response = await apiClient.post('/auth/login', 
-        new URLSearchParams({ username: email, password }).toString(),
+        new URLSearchParams({ username: username, password }).toString(),
         { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
       );
       

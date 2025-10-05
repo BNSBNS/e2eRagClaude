@@ -222,46 +222,28 @@ async def signup(
 
 
 @router.post("/login", response_model=Token)
-@router.post("/login", response_model=Token)
 async def login(
-    db: AsyncSession = Depends(get_db),
-    # Accept EITHER form data OR JSON
-    form_data: Annotated[OAuth2PasswordRequestForm, Depends()] = None,
-    json_data: LoginJSON = None
+    form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+    db: AsyncSession = Depends(get_db)
 ):
-    """
-    Authenticate user and return JWT token.
+    """Login with username or email"""
+    logger.info("Login attempt", username=form_data.username)
     
-    Accepts both:
-    - OAuth2 form-data (application/x-www-form-urlencoded)
-    - JSON (application/json)
-    
-    This is a common pattern for flexibility while maintaining OAuth2 compliance.
-    """
-    # Determine which format was used
-    if form_data:
-        username = form_data.username
-        password = form_data.password
-    elif json_data:
-        username = json_data.username
-        password = json_data.password
-    else:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Must provide credentials in form-data or JSON format"
-        )
-    
-    logger.info("Login attempt", username=username)
-    
-    # Find user by username
+    # Try username first
     result = await db.execute(
-        select(User).where(User.username == username)
+        select(User).where(User.username == form_data.username)
     )
     user = result.scalar_one_or_none()
     
-    # Verify user exists and password is correct
-    if not user or not verify_password(password, user.hashed_password):
-        logger.warning("Failed login attempt", username=username)
+    # If not found, try as email
+    if not user:
+        result = await db.execute(
+            select(User).where(User.email == form_data.username)
+        )
+        user = result.scalar_one_or_none()
+    
+    # Verify password
+    if not user or not verify_password(form_data.password, user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
@@ -269,84 +251,19 @@ async def login(
         )
     
     if not user.is_active:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="User account is inactive"
-        )
+        raise HTTPException(status_code=403, detail="Inactive user")
     
-    # Create JWT token
+    # Create token
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
-        data={"sub": user.username},
-        expires_delta=access_token_expires
+        data={"sub": user.username}, expires_delta=access_token_expires
     )
-    
-    logger.info("User logged in successfully", user_id=user.id)
     
     return {
         "access_token": access_token,
         "token_type": "bearer",
         "expires_in": settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60
     }
-# async def login(
-#     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
-#     db: AsyncSession = Depends(get_db)
-# ):
-#     """
-#     Authenticate user and return JWT token.
-    
-#     OAuth2 Password Flow:
-#     1. User sends username + password
-#     2. Backend verifies credentials
-#     3. If valid, create JWT token with user info
-#     4. Return token to frontend
-#     5. Frontend stores token (localStorage/cookie)
-#     6. Frontend sends token in Authorization header for protected routes
-    
-#     JWT Token contains:
-#     - subject (sub): username
-#     - expiration (exp): timestamp
-#     - issued at (iat): timestamp
-#     - Signature: prevents tampering
-#     """
-#     logger.info("Login attempt", username=form_data.username)
-    
-#     # Find user by username
-#     result = await db.execute(
-#         select(User).where(User.username == form_data.username)
-#     )
-#     user = result.scalar_one_or_none()
-    
-#     # Verify user exists and password is correct
-#     if not user or not verify_password(form_data.password, user.hashed_password):
-#         logger.warning("Failed login attempt", username=form_data.username)
-#         raise HTTPException(
-#             status_code=status.HTTP_401_UNAUTHORIZED,
-#             detail="Incorrect username or password",
-#             headers={"WWW-Authenticate": "Bearer"},
-#         )
-    
-#     if not user.is_active:
-#         raise HTTPException(
-#             status_code=status.HTTP_403_FORBIDDEN,
-#             detail="User account is inactive"
-#         )
-    
-#     # Create JWT token
-#     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-#     access_token = create_access_token(
-#         data={"sub": user.username},
-#         expires_delta=access_token_expires
-#     )
-    
-#     logger.info("User logged in successfully", user_id=user.id)
-    
-#     return {
-#         "access_token": access_token,
-#         "token_type": "bearer",
-#         "expires_in": ACCESS_TOKEN_EXPIRE_MINUTES * 60  # Convert to seconds
-#     }
-
 
 @router.get("/me", response_model=UserResponse)
 async def read_users_me(

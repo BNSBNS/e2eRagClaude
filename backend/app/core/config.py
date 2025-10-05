@@ -27,7 +27,7 @@ class Settings(BaseSettings):
     # ========================================================================
     # APPLICATION
     # ========================================================================
-    
+
     APP_NAME: str = "AI Document Processing Platform"
     ENVIRONMENT: str = "development"  # development, staging, production
     DEBUG: bool = True
@@ -90,7 +90,10 @@ class Settings(BaseSettings):
     
     PROMETHEUS_ENABLED: bool = True
     GRAFANA_ENABLED: bool = True
-    
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60  # 1 hour
+    ALGORITHM: str = "HS256"
+
+
     class Config:
         """Pydantic config"""
         env_file = ".env"
