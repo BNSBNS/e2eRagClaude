@@ -36,12 +36,13 @@ CREATE TABLE chat_sessions (
 
 -- Chat messages table
 CREATE TABLE chat_messages (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    session_id UUID NOT NULL REFERENCES chat_sessions(id) ON DELETE CASCADE,
-    role VARCHAR(20) NOT NULL, -- 'user' or 'assistant'
+    id SERIAL PRIMARY KEY,
+    session_id UUID NOT NULL,
+    role messagerole NOT NULL,
     content TEXT NOT NULL,
-    metadata JSONB,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    meta_data JSONB,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
+    FOREIGN KEY (session_id) REFERENCES chat_sessions(id) ON DELETE CASCADE
 );
 
 -- Indexes

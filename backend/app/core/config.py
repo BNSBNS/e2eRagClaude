@@ -1,61 +1,101 @@
 """
-Application Configuration
-Location: backend/app/core/config.py
+Configuration Settings
+Location: backend/core/config.py
+
+Centralized configuration using Pydantic Settings.
+Reads from environment variables with validation.
+
+Why Pydantic Settings?
+1. Type validation: Ensures config values are correct type
+2. Environment variables: Easy to configure per environment
+3. Default values: Fallbacks for development
+4. Documentation: Self-documenting config
 """
 
-import os
-from typing import List, Optional
 from pydantic_settings import BaseSettings
-from pydantic import validator
+from typing import List
+
 
 class Settings(BaseSettings):
-    # Environment
-    ENVIRONMENT: str = "development"
+    """
+    Application settings.
+    
+    These are loaded from environment variables or .env file.
+    Pydantic validates the types automatically.
+    """
+    
+    # ========================================================================
+    # APPLICATION
+    # ========================================================================
+    
+    APP_NAME: str = "AI Document Processing Platform"
+    ENVIRONMENT: str = "development"  # development, staging, production
     DEBUG: bool = True
     
-    # Security
-    SECRET_KEY: str = "your-secret-key-change-in-production"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
-    REFRESH_TOKEN_EXPIRE_DAYS: int = 7
+    # ========================================================================
+    # SECURITY
+    # ========================================================================
     
-    # For Windows with Docker Desktop
-    DATABASE_URL: str = "postgresql://postgres:postgres@host.docker.internal:5432/ai_platform"
-    REDIS_URL: str = "redis://host.docker.internal:6379/0"
-    NEO4J_URI: str = "bolt://host.docker.internal:7687"
-
-    # Database
-    DATABASE_URL: str = "postgresql://postgres:postgres@localhost:5432/ai_platform"
+    # SECRET_KEY for JWT tokens - MUST BE RANDOM AND SECRET IN PRODUCTION!
+    # Generate with: openssl rand -hex 32
+    SECRET_KEY: str = "your-secret-key-change-this-in-production-use-openssl-rand-hex-32"
     
-    # Redis
-    REDIS_URL: str = "redis://localhost:6379/0"
+    # ========================================================================
+    # DATABASE
+    # ========================================================================
     
-    # Neo4j
-    NEO4J_URI: str = "bolt://localhost:7687"
-    NEO4J_USERNAME: str = "neo4j"
-    NEO4J_PASSWORD: str = "password"
+    # PostgreSQL connection
+    DATABASE_URL: str = "postgresql+asyncpg://postgres:postgres@postgres:5432/ai_platform"
     
-    # OpenAI
-    OPENAI_API_KEY: str = ""
+    # Redis connection
+    REDIS_URL: str = "redis://redis:6379/0"
     
-    # File uploads
-    MAX_FILE_SIZE: int = 50 * 1024 * 1024  # 50MB
-    UPLOAD_DIRECTORY: str = "./uploads"
-    ALLOWED_EXTENSIONS: List[str] = [".pdf", ".txt", ".csv"]
+    # Neo4j connection
+    NEO4J_URI: str = "bolt://neo4j:7687"
+    NEO4J_USER: str = "neo4j"
+    NEO4J_PASSWORD: str = "your-neo4j-password"
     
-    # CORS
-    CORS_ORIGINS: List[str] = ["http://localhost:3000", "http://127.0.0.1:3000"]
+    # ========================================================================
+    # CORS (Cross-Origin Resource Sharing)
+    # ========================================================================
     
-    # Rate limiting
-    RATE_LIMIT_PER_MINUTE: int = 100
+    # Allowed origins for frontend
+    # In production, set this to your actual frontend domain
+    CORS_ORIGINS: List[str] = [
+        "http://localhost:3000",  # Next.js development
+        "http://frontend:3000",   # Docker internal
+    ]
     
-    @validator("CORS_ORIGINS", pre=True)
-    def parse_cors_origins(cls, v):
-        if isinstance(v, str):
-            return [i.strip() for i in v.split(",")]
-        return v
+    # ========================================================================
+    # AI / ML
+    # ========================================================================
+    
+    # OpenAI API key
+    OPENAI_API_KEY: str = "your-openai-api-key-here"
+    
+    # Model selection
+    OPENAI_MODEL: str = "gpt-4"
+    EMBEDDING_MODEL: str = "text-embedding-ada-002"
+    
+    # ========================================================================
+    # FILE UPLOAD
+    # ========================================================================
+    
+    UPLOAD_DIR: str = "/app/uploads"
+    MAX_UPLOAD_SIZE: int = 50 * 1024 * 1024  # 50 MB
+    
+    # ========================================================================
+    # MONITORING
+    # ========================================================================
+    
+    PROMETHEUS_ENABLED: bool = True
+    GRAFANA_ENABLED: bool = True
     
     class Config:
+        """Pydantic config"""
         env_file = ".env"
         case_sensitive = True
 
+
+# Create global settings instance
 settings = Settings()

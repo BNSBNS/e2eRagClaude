@@ -34,13 +34,15 @@ ENV NEXT_TELEMETRY_DISABLED 1
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-COPY --from=production --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=production --chown=nextjs:nodejs /app/.next/static ./.next/static
+# Copy everything needed
+COPY --from=production --chown=nextjs:nodejs /app/.next ./.next
+COPY --from=production --chown=nextjs:nodejs /app/node_modules ./node_modules
+COPY --from=production --chown=nextjs:nodejs /app/package.json ./package.json
 COPY --from=production --chown=nextjs:nodejs /app/public ./public
 
 USER nextjs
 EXPOSE 3000
 ENV PORT 3000
-ENV HOSTNAME "0.0.0.0"
 
-CMD ["node", "server.js"]
+# Use Next.js built-in server
+CMD ["npm", "start"]

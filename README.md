@@ -11,6 +11,15 @@ Cloud: AWS (ECS, RDS, S3, CloudFront) Porter
 Monitoring: Prometheus + Grafana + LangSmith CloudZero +3
 
 
+```
+curl -X POST http://localhost:8000/api/auth/signup   -H "Content-Type: application/json"   -d '{
+    "username": "admin",
+    "email": "admin@example.com",
+    "password": "password123",
+    "full_name": "Admin User"
+  }'
+```
+
 ai-document-platform/
 ├── backend/
 │   ├── app/

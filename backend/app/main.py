@@ -3,6 +3,8 @@ Main FastAPI Application Entry Point
 Location: backend/app/main.py
 """
 
+# Add import
+from api import auth, documents, ai, websocket as ws_router, teacher, research
 import os
 import sys
 from pathlib import Path
@@ -114,6 +116,10 @@ app.include_router(auth.router, prefix="/api/auth", tags=["authentication"])
 app.include_router(documents.router, prefix="/api/documents", tags=["documents"])
 app.include_router(ai.router, prefix="/api/ai", tags=["ai-processing"])
 app.include_router(ws_router.router, prefix="/ws", tags=["websockets"])
+app.include_router(teacher.router, prefix="/api/teacher", tags=["teacher-agent"])
+# Add router (remove teacher if you want)
+app.include_router(research.router, prefix="/api/research", tags=["research-agent"])
+
 
 # Health check endpoint
 @app.get("/health")

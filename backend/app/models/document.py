@@ -1,51 +1,48 @@
 """
 Document Model
-Location: backend/app/models/document.py
+Enhanced with processing status and metadata
 """
 
-from sqlalchemy import Column, String, Integer, ForeignKey, DateTime, Enum as SQLEnum, Text
-from sqlalchemy.dialects.postgresql import UUID, JSONB
-from sqlalchemy.sql import func
+from sqlalchemy import Column, Integer, String, Text, ForeignKey, JSON, Enum as SQLAEnum, DateTime
 from sqlalchemy.orm import relationship
-import uuid
-import enum
+from sqlalchemy.sql import func
+from enum import Enum
 from core.database import Base
 
-class DocumentStatus(enum.Enum):
-    UPLOADING = "uploading"
+
+class DocumentStatus(str, Enum):
+    """Document processing status"""
+    PENDING = "pending"
     PROCESSING = "processing"
     COMPLETED = "completed"
     FAILED = "failed"
 
-class Document(Base):
-    __tablename__ = "documents"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+class Document(Base):
+    """Document model"""
+    __tablename__ = "documents"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     
     # File information
-    original_filename = Column(String(500), nullable=False)
-    filename = Column(String(500), nullable=False)  # Stored filename
-    file_path = Column(String(1000), nullable=False)
-    file_size = Column(Integer, nullable=False)
-    file_hash = Column(String(64), unique=True, nullable=False)
-    mime_type = Column(String(100), nullable=False)
+    title = Column(String(255), nullable=False)
+    file_path = Column(String(500), nullable=False)
+    file_hash = Column(String(64), nullable=False, index=True)
+    content_type = Column(String(50), nullable=False)  # pdf, txt, csv
     
-    # Processing status
-    status = Column(SQLEnum(DocumentStatus), default=DocumentStatus.UPLOADING)
-    
-    # Metadata and results
-    metadata = Column(JSONB, default=dict)
-    processing_results = Column(JSONB, default=dict)
-    extracted_text = Column(Text)
+    # Processing
+    status = Column(SQLAEnum(DocumentStatus), default=DocumentStatus.PENDING, nullable=False)
+    extracted_text = Column(Text, nullable=True)
+    chunk_count = Column(Integer, nullable=True)
+    doc_metadata  = Column(JSON, nullable=True)
     
     # Timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
-    processed_at = Column(DateTime(timezone=True))
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
     # Relationships
     user = relationship("User", back_populates="documents")
-
+    
     def __repr__(self):
-        return f"<Document(id={self.id}, filename={self.original_filename}, status={self.status})>"
+        return f"<Document(id={self.id}, title='{self.title}', status='{self.status}')>"

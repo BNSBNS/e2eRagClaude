@@ -1,70 +1,90 @@
 """
 Redis Client Configuration
-Location: backend/app/core/redis_client.py
+Handles caching, session storage, and real-time features
 """
 
 import redis.asyncio as redis
-from core.config import settings
+from typing import Optional, Any
 import json
-from typing import Any, Optional
+from core.config import settings
+import structlog
 
-class RedisClient:
-    def __init__(self):
-        self.redis: Optional[redis.Redis] = None
-    
-    async def connect(self):
-        """Connect to Redis"""
-        self.redis = redis.from_url(
+logger = structlog.get_logger()
+
+# Global redis client
+redis_client: Optional[redis.Redis] = None
+
+
+async def init_redis():
+    """Initialize Redis connection"""
+    global redis_client
+    try:
+        redis_client = await redis.from_url(
             settings.REDIS_URL,
             encoding="utf-8",
             decode_responses=True,
-            socket_connect_timeout=5,
-            socket_timeout=5,
+            max_connections=10
         )
         # Test connection
-        await self.redis.ping()
-    
-    async def close(self):
-        """Close Redis connection"""
-        if self.redis:
-            await self.redis.close()
-    
-    async def set(self, key: str, value: Any, expire: Optional[int] = None):
-        """Set a key-value pair"""
+        await redis_client.ping()
+        logger.info("Redis connected successfully")
+    except Exception as e:
+        logger.error("Redis connection failed", error=str(e))
+        raise
+
+
+async def close_redis():
+    """Close Redis connection"""
+    global redis_client
+    if redis_client:
+        await redis_client.close()
+        logger.info("Redis connection closed")
+
+
+async def get_redis() -> redis.Redis:
+    """Get Redis client instance"""
+    return redis_client
+
+
+# Cache utilities
+async def cache_set(key: str, value: Any, expire: int = 3600):
+    """Set cache with expiration (default 1 hour)"""
+    try:
         if isinstance(value, (dict, list)):
             value = json.dumps(value)
-        
-        await self.redis.set(key, value, ex=expire)
-    
-    async def get(self, key: str) -> Optional[Any]:
-        """Get a value by key"""
-        value = await self.redis.get(key)
+        await redis_client.setex(key, expire, value)
+    except Exception as e:
+        logger.error("Cache set failed", key=key, error=str(e))
+
+
+async def cache_get(key: str) -> Optional[Any]:
+    """Get cache value"""
+    try:
+        value = await redis_client.get(key)
         if value:
             try:
                 return json.loads(value)
             except json.JSONDecodeError:
                 return value
         return None
-    
-    async def delete(self, key: str):
-        """Delete a key"""
-        await self.redis.delete(key)
-    
-    async def exists(self, key: str) -> bool:
-        """Check if key exists"""
-        return await self.redis.exists(key) == 1
+    except Exception as e:
+        logger.error("Cache get failed", key=key, error=str(e))
+        return None
 
-# Global Redis client
-redis_client = RedisClient()
 
-async def init_redis():
-    """Initialize Redis connection"""
-    await redis_client.connect()
+async def cache_delete(key: str):
+    """Delete cache key"""
+    try:
+        await redis_client.delete(key)
+    except Exception as e:
+        logger.error("Cache delete failed", key=key, error=str(e))
 
-async def close_redis():
-    """Close Redis connection"""
-    await redis_client.close()
 
-async def get_redis():
-    """Dependency to get Redis client"""
-    return redis_client
+async def cache_clear_pattern(pattern: str):
+    """Delete all keys matching pattern"""
+    try:
+        keys = await redis_client.keys(pattern)
+        if keys:
+            await redis_client.delete(*keys)
+    except Exception as e:
+        logger.error("Cache clear pattern failed", pattern=pattern, error=str(e))

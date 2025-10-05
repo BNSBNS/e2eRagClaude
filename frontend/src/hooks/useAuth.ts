@@ -1,4 +1,4 @@
-// src/hooks/useAuth.ts - COMPATIBILITY VERSION
+// src/hooks/useAuth.ts - FIXED VERSION
 'use client'
 
 import { useState, useEffect } from 'react';
@@ -18,15 +18,22 @@ export const useAuth = () => {
 
   const login = async (email: string, password: string) => {
     try {
-      const response = await apiClient.post('/auth/login', { email, password });
+      const response = await apiClient.post('/auth/login', 
+        new URLSearchParams({ username: email, password }).toString(),
+        { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
+      );
+      
       const { access_token } = response.data;
       
       localStorage.setItem('access_token', access_token);
+      
+      // Fetch user data
       const userResponse = await apiClient.get('/auth/me');
       setUser(userResponse.data);
       
       router.push('/dashboard');
     } catch (error) {
+      console.error('Login failed:', error);
       throw new Error('Login failed');
     }
   };
@@ -38,17 +45,21 @@ export const useAuth = () => {
   };
 
   useEffect(() => {
-    const token = localStorage.getItem('access_token');
-    if (token) {
-      apiClient.get('/auth/me').then(response => {
-        setUser(response.data);
-        setLoading(false);
-      }).catch(() => {
-        logout();
-      });
-    } else {
+    const checkAuth = async () => {
+      const token = localStorage.getItem('access_token');
+      if (token) {
+        try {
+          const response = await apiClient.get('/auth/me');
+          setUser(response.data);
+        } catch (error) {
+          console.error('Auth check failed:', error);
+          localStorage.removeItem('access_token');
+        }
+      }
       setLoading(false);
-    }
+    };
+
+    checkAuth();
   }, []);
 
   return { 

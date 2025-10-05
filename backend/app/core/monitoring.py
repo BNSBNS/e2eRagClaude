@@ -33,6 +33,30 @@ ACTIVE_USERS = Gauge(
     'Currently active users'
 )
 
+# Token usage metrics
+llm_tokens_total = Counter(
+    'llm_tokens_total',
+    'Total tokens used',
+    ['model', 'type']  # type: input/output
+)
+
+llm_cost_total = Counter(
+    'llm_cost_usd_total',
+    'Total LLM cost in USD',
+    ['model', 'operation']  # operation: rag/graph/teacher
+)
+
+llm_request_duration = Histogram(
+    'llm_request_duration_seconds',
+    'LLM request duration',
+    ['model', 'operation']
+)
+
+llm_active_sessions = Gauge(
+    'llm_active_teaching_sessions',
+    'Number of active teaching sessions'
+)
+
 class MetricsMiddleware:
     def __init__(self, app):
         self.app = app

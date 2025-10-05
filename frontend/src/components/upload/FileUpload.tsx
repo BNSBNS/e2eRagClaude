@@ -42,7 +42,8 @@ export const FileUpload: React.FC<FileUploadProps> = ({ onUploadComplete }) => {
         if (sendMessage) {
           sendMessage({
             type: 'document_upload',
-            document_id: response.id || response.data?.id
+            document_id: response.data?.id
+
           });
         }
 
