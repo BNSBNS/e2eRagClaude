@@ -94,8 +94,8 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
 
     CHROMA_HOST: str = "chromadb"
-    CHROMA_PORT: int = 8000
-    CHROMA_URL: str = "http://chromadb:8000"
+    CHROMA_PORT: int = 4000
+    CHROMA_URL: str = "http://chromadb:4000"
 
 
     class Config:
