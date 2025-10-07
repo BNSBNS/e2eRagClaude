@@ -46,7 +46,6 @@ class LoginJSON(BaseModel):
 
 logger = structlog.get_logger()
 
-# Create the router - THIS IS WHAT WAS MISSING!
 router = APIRouter()
 
 # OAuth2 scheme for JWT token extraction from headers
@@ -234,14 +233,7 @@ async def login(
         select(User).where(User.username == form_data.username)
     )
     user = result.scalar_one_or_none()
-    
-    # If not found, try as email
-    if not user:
-        result = await db.execute(
-            select(User).where(User.email == form_data.username)
-        )
-        user = result.scalar_one_or_none()
-    
+
     # Verify password
     if not user or not verify_password(form_data.password, user.hashed_password):
         raise HTTPException(

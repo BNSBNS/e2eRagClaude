@@ -18,7 +18,7 @@ export const useAuth = () => {
 
   const login = async (username: string, password: string) => {
     try {
-      const response = await apiClient.post('/auth/login', 
+      const response = await apiClient.post('/api/auth/login', 
         new URLSearchParams({ username: username, password }).toString(),
         { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
       );
@@ -28,7 +28,7 @@ export const useAuth = () => {
       localStorage.setItem('access_token', access_token);
       
       // Fetch user data
-      const userResponse = await apiClient.get('/auth/me');
+      const userResponse = await apiClient.get('/api/auth/me');
       setUser(userResponse.data);
       
       router.push('/dashboard');
@@ -49,7 +49,7 @@ export const useAuth = () => {
       const token = localStorage.getItem('access_token');
       if (token) {
         try {
-          const response = await apiClient.get('/auth/me');
+          const response = await apiClient.get('/api/auth/me');
           setUser(response.data);
         } catch (error) {
           console.error('Auth check failed:', error);

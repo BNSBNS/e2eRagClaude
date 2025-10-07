@@ -74,7 +74,7 @@ class PDFProcessor:
                 return {
                     'text': full_text,
                     'pages': pages_content,
-                    'metadata': {
+                    'doc_metadata': {
                         'title': metadata.get('Title', ''),
                         'author': metadata.get('Author', ''),
                         'subject': metadata.get('Subject', ''),

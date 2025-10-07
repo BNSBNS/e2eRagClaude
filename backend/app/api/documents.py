@@ -148,5 +148,5 @@ async def get_document_content(
         "document_id": document.id,
         "title": document.title,
         "content": document.extracted_text,
-        "metadata": document.doc_metadata 
+        "doc_metadata": document.doc_metadata 
     }

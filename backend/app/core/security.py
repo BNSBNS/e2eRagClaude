@@ -43,7 +43,8 @@ def decode_access_token(token: str) -> Optional[dict]:
     """Decode and validate JWT token"""
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
-        return payload
+        # return payload
+        return payload.get("sub")
     except JWTError as e:
         logger.error("Token decode failed", error=str(e))
         return None
