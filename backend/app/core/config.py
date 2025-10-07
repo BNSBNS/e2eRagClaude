@@ -71,7 +71,7 @@ class Settings(BaseSettings):
     # ========================================================================
     
     # OpenAI API key
-    OPENAI_API_KEY: str = "your-openai-api-key-here"
+    OPENAI_API_KEY: str = ""
     
     # Model selection
     OPENAI_MODEL: str = "gpt-4"
@@ -92,6 +92,10 @@ class Settings(BaseSettings):
     GRAFANA_ENABLED: bool = True
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60  # 1 hour
     ALGORITHM: str = "HS256"
+
+    CHROMA_HOST: str = "chromadb"
+    CHROMA_PORT: int = 8000
+    CHROMA_URL: str = "http://chromadb:8000"
 
 
     class Config:

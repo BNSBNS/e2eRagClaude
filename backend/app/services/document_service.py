@@ -74,7 +74,7 @@ class DocumentService:
             if document.content_type == 'pdf':
                 extracted_data = await PDFProcessor.extract_with_metadata(document.file_path)
                 document.extracted_text = extracted_data['text']
-                document.doc_metadata  = extracted_data['metadata']
+                document.doc_metadata  = extracted_data['doc_metadata']
                 
             elif document.content_type == 'txt':
                 with open(document.file_path, 'r', encoding='utf-8') as f:

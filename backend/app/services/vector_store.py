@@ -4,11 +4,14 @@ Handles embeddings and similarity search using ChromaDB
 """
 
 from typing import List, Dict, Optional
-import chromadb
+
 from chromadb.config import Settings
 from openai import AsyncOpenAI
 from core.config import settings
 import structlog
+import chromadb
+from chromadb.config import Settings as ChromaSettings
+from core.config import settings
 
 logger = structlog.get_logger()
 
@@ -16,11 +19,14 @@ logger = structlog.get_logger()
 openai_client = AsyncOpenAI(api_key=settings.OPENAI_API_KEY)
 
 # Initialize ChromaDB client
-chroma_client = chromadb.Client(Settings(
-    anonymized_telemetry=False,
-    allow_reset=True
-))
-
+chroma_client = chromadb.HttpClient(
+    host=settings.CHROMA_HOST,
+    port=settings.CHROMA_PORT,
+    settings=ChromaSettings(
+        anonymized_telemetry=False,
+        allow_reset=True
+    )
+)
 
 class VectorStore:
     """Manage document embeddings and similarity search"""
