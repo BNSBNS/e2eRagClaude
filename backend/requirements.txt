@@ -66,6 +66,9 @@ aiohttp==3.9.1
 # CORS
 fastapi-cors==0.0.6
 
+# Rate Limiting
+slowapi==0.1.9
+
 # WebSockets
 websockets==12.0
 

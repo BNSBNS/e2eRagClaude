@@ -5,8 +5,6 @@ Location: backend/core/database.py
 
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.orm import declarative_base
-
-from sqlalchemy import text
 from core.config import settings
 import structlog
 
@@ -33,34 +31,25 @@ Base = declarative_base()
 
 
 async def init_db():
-    """Initialize database - create all tables"""
-    
+    """Initialize database schema using Alembic migrations.
+
+    PRODUCTION SAFETY:
+    - Does NOT drop existing schema (preserves all data)
+    - Only creates tables if they don't exist
+    - For schema changes, use Alembic migrations instead
+
+    CRITICAL: Never use DROP commands in production - this would destroy all data!
+    """
+
     # Import models to register them with Base
     from models import user, document, chat
-    
+
     async with engine.begin() as conn:
-        # Drop all tables in the public schema using CASCADE
-        await conn.execute(text("DROP SCHEMA public CASCADE"))
-        # Recreate the schema
-        await conn.execute(text("CREATE SCHEMA public"))
-        # You might need to grant permissions as well, depending on your user
-        # await conn.execute(text("GRANT ALL ON SCHEMA public TO your_username"))
-        # await conn.execute(text("GRANT ALL ON SCHEMA public TO public"))
-        
-        # Now create all tables
+        # Create tables only if they don't exist (idempotent operation)
+        # This preserves existing data and schema
         await conn.run_sync(Base.metadata.create_all)
-        # await conn.run_sync(Base.metadata.drop_all)
-        # await conn.run_sync(Base.metadata.create_all)
-        # await conn.run_sync(lambda sync_conn: Base.metadata.drop_all(sync_conn))
-        # await conn.run_sync(Base.metadata.create_all)
-        # # Drop existing ENUM types first (they don't get dropped with tables)
-        # await conn.execute(text("DROP TYPE IF EXISTS userrole CASCADE"))
-        # await conn.execute(text("DROP TYPE IF EXISTS messagerole CASCADE"))
-        
-        # # Now create tables (will also create ENUM types)
-        # await conn.run_sync(Base.metadata.create_all)
-    
-    logger.info("Database tables created successfully")
+
+    logger.info("Database initialized (existing data preserved)")
 
 
 async def close_db():

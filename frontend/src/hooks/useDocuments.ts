@@ -38,8 +38,16 @@ export function useUploadDocument() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ file, documentType }: { file: File; documentType: string }) =>
-      apiClient.uploadDocument(file, documentType),
+    mutationFn: ({
+      file,
+      documentType,
+      ragType = 'vector'
+    }: {
+      file: File;
+      documentType: string;
+      ragType?: 'vector' | 'graph' | 'hybrid'
+    }) =>
+      apiClient.uploadDocument(file, documentType, ragType),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["documents"] });
     },

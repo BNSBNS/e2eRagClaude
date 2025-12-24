@@ -38,11 +38,12 @@ class APIClient {
     return response.data
   }
 
-  async uploadDocument(file: File, documentType: string) {
+  async uploadDocument(file: File, documentType: string, ragType: 'vector' | 'graph' | 'hybrid' = 'vector') {
     const formData = new FormData()
     formData.append('file', file)
     formData.append('document_type', documentType)
-    
+    formData.append('rag_type', ragType)
+
     return this.client.post('/api/documents/upload', formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     })

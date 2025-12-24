@@ -13,6 +13,7 @@ Why Pydantic Settings?
 """
 
 from pydantic_settings import BaseSettings
+from pydantic import Field, field_validator
 from typing import List
 
 
@@ -35,10 +36,11 @@ class Settings(BaseSettings):
     # ========================================================================
     # SECURITY
     # ========================================================================
-    
-    # SECRET_KEY for JWT tokens - MUST BE RANDOM AND SECRET IN PRODUCTION!
+
+    # SECRET_KEY for JWT tokens - MUST BE RANDOM AND SECRET!
     # Generate with: openssl rand -hex 32
-    SECRET_KEY: str = "your-secret-key-change-this-in-production-use-openssl-rand-hex-32"
+    # NO DEFAULT - must be set via environment variable
+    SECRET_KEY: str = Field(..., min_length=32)
     
     # ========================================================================
     # DATABASE
@@ -58,20 +60,31 @@ class Settings(BaseSettings):
     # ========================================================================
     # CORS (Cross-Origin Resource Sharing)
     # ========================================================================
-    
+
     # Allowed origins for frontend
-    # In production, set this to your actual frontend domain
-    CORS_ORIGINS: List[str] = [
-        "http://localhost:3000",  # Next.js development
-        "http://frontend:3000",   # Docker internal
-    ]
+    # Can be set via environment variable as comma-separated list
+    # Default for development includes localhost and Docker internal
+    CORS_ORIGINS: List[str] = Field(
+        default=["http://localhost:3000", "http://frontend:3000"],
+        description="Allowed CORS origins (comma-separated in env)"
+    )
+
+    @field_validator('CORS_ORIGINS', mode='before')
+    @classmethod
+    def parse_cors_origins(cls, v):
+        """Parse CORS_ORIGINS from environment variable (comma-separated)."""
+        if isinstance(v, str):
+            # Split by comma and strip whitespace
+            return [origin.strip() for origin in v.split(',') if origin.strip()]
+        return v
     
     # ========================================================================
     # AI / ML
     # ========================================================================
     
-    # OpenAI API key
-    OPENAI_API_KEY: str = ""
+    # OpenAI API key - REQUIRED
+    # Must start with 'sk-' and be set via environment variable
+    OPENAI_API_KEY: str = Field(..., min_length=20)
     
     # Model selection
     OPENAI_MODEL: str = "gpt-4"
@@ -97,6 +110,41 @@ class Settings(BaseSettings):
     CHROMA_PORT: int = 4000
     CHROMA_URL: str = "http://chromadb:4000"
 
+
+    @field_validator('SECRET_KEY')
+    @classmethod
+    def validate_secret_key(cls, v: str) -> str:
+        """Validate SECRET_KEY is secure and not the default value."""
+        # Check if it's the old insecure default
+        if "your-secret-key-change-this" in v.lower():
+            raise ValueError(
+                "Default SECRET_KEY detected! NEVER use in production. "
+                "Generate a secure key with: openssl rand -hex 32"
+            )
+
+        # Ensure minimum length for security
+        if len(v) < 32:
+            raise ValueError("SECRET_KEY must be at least 32 characters for security")
+
+        return v
+
+    @field_validator('OPENAI_API_KEY')
+    @classmethod
+    def validate_openai_key(cls, v: str) -> str:
+        """Validate OpenAI API key format."""
+        if not v or v == "":
+            raise ValueError(
+                "OPENAI_API_KEY is required. Set it in environment variables."
+            )
+
+        # OpenAI keys start with 'sk-'
+        if not v.startswith("sk-"):
+            raise ValueError(
+                "OPENAI_API_KEY appears invalid (should start with 'sk-'). "
+                "Get your API key from https://platform.openai.com/api-keys"
+            )
+
+        return v
 
     class Config:
         """Pydantic config"""
