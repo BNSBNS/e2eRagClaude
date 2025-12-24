@@ -6,6 +6,18 @@ echo "Running Complete Test Suite (Phases 1-4)"
 echo "============================================"
 echo ""
 
+# Set PYTHONPATH to include app directory
+export PYTHONPATH="${PYTHONPATH}:$(pwd)/app"
+
+# Load test environment variables
+if [ -f .env.test ]; then
+    export $(cat .env.test | grep -v '^#' | xargs)
+    echo "✓ Test environment loaded from .env.test"
+else
+    echo "⚠ Warning: .env.test not found, using system environment"
+fi
+echo ""
+
 # Colors
 GREEN='\033[0;32m'
 RED='\033[0;31m'

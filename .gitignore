@@ -14,7 +14,7 @@ $RECYCLE.BIN/
 frontend/node_modules/
 backend/venv/
 backend/env/
-backend/__pycache__/
+backend/**/__pycache__/
 frontend/.pnpm-store/
 frontend/.yarn/
 node_modules/
